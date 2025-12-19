@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "patterns": ["*.xcstrings"],
+      "message": "Do not read .xcstrings files directly. Use 'xcstrings-manager' skill instead."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "xcassets-manager",
+  "version": "1.0.2",
+  "description": "CRUD management for xcassets colors (Color Set) and images (imageset).",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}

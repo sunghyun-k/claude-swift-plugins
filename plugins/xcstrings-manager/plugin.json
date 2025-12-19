@@ -1,0 +1,8 @@
+{
+  "name": "xcstrings-manager",
+  "version": "1.0.4",
+  "description": "Tools for adding, updating, deleting, and reading translations in iOS .xcstrings files.",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}

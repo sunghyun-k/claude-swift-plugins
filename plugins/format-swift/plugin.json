@@ -1,0 +1,8 @@
+{
+  "name": "format-swift",
+  "version": "2.0.0",
+  "description": "Automatically formats Swift files and reports lint warnings. Supports Apple swift-format, nicklockwood/SwiftFormat, and SwiftLint (auto-detected by config files).",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}

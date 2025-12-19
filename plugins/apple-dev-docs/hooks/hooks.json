@@ -1,0 +1,16 @@
+{
+  "description": "Replaces developer.apple.com URLs with sosumi.ai for better documentation access",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/rewrite-apple-url.py"
+          }
+        ]
+      }
+    ]
+  }
+}

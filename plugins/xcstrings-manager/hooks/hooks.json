@@ -1,0 +1,16 @@
+{
+  "description": "Blocks direct reading of .xcstrings files, prompting to use xcstrings-manager skill instead",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-read.py"
+          }
+        ]
+      }
+    ]
+  }
+}

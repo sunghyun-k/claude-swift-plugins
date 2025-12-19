@@ -1,0 +1,8 @@
+{
+  "name": "apple-dev-docs",
+  "version": "1.0.2",
+  "description": "Automatically converts developer.apple.com URLs to sosumi.ai for Apple documentation access.",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}

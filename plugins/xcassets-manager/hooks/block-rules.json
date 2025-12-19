@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "patterns": ["*.xcassets/*.colorset/*", "*.xcassets/**/*.colorset/*"],
+      "message": "Do not read xcassets color files directly. Use 'xcassets-color-manager' skill instead."
+    },
+    {
+      "patterns": ["*.xcassets/*.imageset/*", "*.xcassets/**/*.imageset/*"],
+      "message": "Do not read xcassets image files directly. Use 'xcassets-image-manager' skill instead."
+    }
+  ]
+}

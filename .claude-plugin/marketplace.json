@@ -1,0 +1,56 @@
+{
+  "name": "claude-swift-plugins",
+  "owner": {
+    "name": "Sunghyun Kim"
+  },
+  "metadata": {
+    "description": "Claude Code plugin collection for iOS/Swift development",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "format-swift",
+      "source": "./plugins/format-swift",
+      "description": "Automatically runs swiftformat after editing Swift files.",
+      "version": "1.0.1",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "hooks",
+      "tags": ["ios", "swift", "formatting"]
+    },
+    {
+      "name": "apple-dev-docs",
+      "source": "./plugins/apple-dev-docs",
+      "description": "Automatically converts developer.apple.com URLs to sosumi.ai for Apple documentation access.",
+      "version": "1.0.2",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "hooks",
+      "tags": ["ios", "apple", "documentation"]
+    },
+    {
+      "name": "xcstrings-manager",
+      "source": "./plugins/xcstrings-manager",
+      "description": "Tools for adding, updating, deleting, and reading translations in iOS .xcstrings files.",
+      "version": "1.0.4",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "localization",
+      "tags": ["ios", "xcstrings", "localization", "i18n"]
+    },
+    {
+      "name": "xcassets-manager",
+      "source": "./plugins/xcassets-manager",
+      "description": "CRUD management for xcassets colors (Color Set) and images (imageset).",
+      "version": "1.0.2",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "assets",
+      "tags": ["ios", "xcassets", "colors", "images"]
+    }
+  ]
+}

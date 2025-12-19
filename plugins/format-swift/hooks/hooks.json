@@ -1,0 +1,16 @@
+{
+  "description": "Automatically formats Swift files and reports lint warnings (supports swift-format, SwiftFormat, SwiftLint)",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/format-swift.py"
+          }
+        ]
+      }
+    ]
+  }
+}

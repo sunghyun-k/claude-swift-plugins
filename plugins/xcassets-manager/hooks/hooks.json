@@ -1,0 +1,16 @@
+{
+  "description": "Blocks direct reading of xcassets color/image files, prompting to use skills instead",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-read.py"
+          }
+        ]
+      }
+    ]
+  }
+}
