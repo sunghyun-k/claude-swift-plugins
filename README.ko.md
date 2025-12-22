@@ -41,6 +41,11 @@ iOS/Swift 개발을 위한 Claude Code 플러그인 모음입니다.
 
 Swift 파일 편집 후 자동으로 포맷팅하고 린트 경고를 보고합니다.
 
+**작동 원리:**
+- Hook: `PostToolUse`
+- Matcher: `Edit|Write`
+- Swift 파일 편집/작성 후 자동 실행
+
 **지원 도구 (설정 파일로 자동 감지):**
 - Apple swift-format
 - nicklockwood/SwiftFormat
@@ -50,9 +55,19 @@ Swift 파일 편집 후 자동으로 포맷팅하고 린트 경고를 보고합�
 
 `developer.apple.com` URL을 `sosumi.ai`로 자동 변환하여 Claude Code에서 Apple 문서에 더 잘 접근할 수 있게 합니다.
 
+**작동 원리:**
+- Hook: `PreToolUse`
+- Matcher: `WebFetch`
+- URL 요청 전 Apple 문서 URL 변환
+
 ### xcstrings-manager
 
 iOS `.xcstrings` 로컬라이제이션 파일 관리 도구입니다.
+
+**작동 원리:**
+- Hook: `PreToolUse`
+- Matcher: `Read`
+- `.xcstrings` 파일 직접 읽기 차단, 스킬 사용 유도
 
 **기능:**
 - 번역과 함께 새 로컬라이제이션 키 추가
@@ -64,6 +79,11 @@ iOS `.xcstrings` 로컬라이제이션 파일 관리 도구입니다.
 ### xcassets-manager
 
 xcassets 리소스 CRUD 관리 도구입니다.
+
+**작동 원리:**
+- Hook: `PreToolUse`
+- Matcher: `Read`
+- `.colorset`/`.imageset` 파일 직접 읽기 차단, 스킬 사용 유도
 
 **Color Set 기능:**
 - 색상 생성, 조회, 수정, 삭제

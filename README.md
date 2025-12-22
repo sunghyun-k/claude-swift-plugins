@@ -43,6 +43,11 @@ Or browse and install interactively:
 
 Automatically formats Swift files and reports lint warnings after editing.
 
+**How it works:**
+- Hook: `PostToolUse`
+- Matcher: `Edit|Write`
+- Runs automatically after Swift files are edited/written
+
 **Supported Tools (auto-detected by config files):**
 - Apple swift-format
 - nicklockwood/SwiftFormat
@@ -52,9 +57,19 @@ Automatically formats Swift files and reports lint warnings after editing.
 
 Automatically converts `developer.apple.com` URLs to `sosumi.ai` for better Apple documentation access in Claude Code.
 
+**How it works:**
+- Hook: `PreToolUse`
+- Matcher: `WebFetch`
+- Rewrites Apple documentation URLs before fetching
+
 ### xcstrings-manager
 
 Tools for managing iOS `.xcstrings` localization files.
+
+**How it works:**
+- Hook: `PreToolUse`
+- Matcher: `Read`
+- Blocks direct `.xcstrings` file reads, prompting to use the skill instead
 
 **Features:**
 - Add new localization keys with translations
@@ -66,6 +81,11 @@ Tools for managing iOS `.xcstrings` localization files.
 ### xcassets-manager
 
 CRUD management for xcassets resources.
+
+**How it works:**
+- Hook: `PreToolUse`
+- Matcher: `Read`
+- Blocks direct `.colorset`/`.imageset` file reads, prompting to use the skill instead
 
 **Color Set Features:**
 - Create, read, update, delete colors
