@@ -26,11 +26,16 @@ def main():
     parser.add_argument('--en', help='English translation')
     parser.add_argument('--lang', action='append', type=parse_lang_arg, metavar='LANG:VALUE',
                         help='Additional language (e.g., --lang=ja:日本語). Can be used multiple times.')
+    translate_group = parser.add_mutually_exclusive_group()
+    translate_group.add_argument('--no-translate', action='store_true',
+                                 help='Mark as "should not translate"')
+    translate_group.add_argument('--translate', action='store_true',
+                                 help='Remove "should not translate" mark')
     args = parser.parse_args()
 
-    has_update = args.ko or args.en or args.lang
+    has_update = args.ko or args.en or args.lang or getattr(args, 'no_translate', False) or getattr(args, 'translate', False)
     if not has_update:
-        print(json.dumps({'error': 'At least one translation required (--ko, --en, or --lang)'}))
+        print(json.dumps({'error': 'At least one option required (--ko, --en, --lang, --no-translate, or --translate)'}))
         sys.exit(1)
 
     data = load(args.file)
@@ -57,8 +62,20 @@ def main():
             locs[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
             updated[lang] = value
 
+    # shouldTranslate 처리
+    result = {'status': 'success', 'key': args.key}
+    if updated:
+        result['updated'] = updated
+
+    if getattr(args, 'no_translate', False):
+        entry['shouldTranslate'] = False
+        result['shouldTranslate'] = False
+    elif getattr(args, 'translate', False):
+        entry.pop('shouldTranslate', None)
+        result['shouldTranslate'] = True
+
     save(data, args.file)
-    print(json.dumps({'status': 'success', 'key': args.key, 'updated': updated}, ensure_ascii=False))
+    print(json.dumps(result, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

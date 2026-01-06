@@ -35,11 +35,23 @@ def main():
     parser.add_argument('--count', action='store_true', help='Show count only')
     parser.add_argument('--missing', metavar='LANG', nargs='?', const='all',
                         help='Show keys missing translation. Use --missing for all languages, --missing=ko for specific language')
+    parser.add_argument('--no-translate', action='store_true',
+                        help='Show only keys marked as "should not translate"')
     args = parser.parse_args()
 
     data = load(args.file)
     strings = data.get('strings', {})
     keys = sorted(strings.keys())
+
+    # --no-translate 필터
+    if getattr(args, 'no_translate', False):
+        no_translate_keys = [k for k in keys if strings[k].get('shouldTranslate') is False]
+        if args.count:
+            print(json.dumps({'count': len(no_translate_keys)}))
+        else:
+            print(json.dumps({'count': len(no_translate_keys), 'keys': no_translate_keys},
+                           ensure_ascii=False, indent=2))
+        return
 
     if args.missing:
         all_langs = get_all_languages(data)

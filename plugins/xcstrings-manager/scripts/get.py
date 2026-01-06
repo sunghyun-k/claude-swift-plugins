@@ -41,6 +41,10 @@ def main():
 
     result = {'key': args.key, 'translations': {}}
 
+    # shouldTranslate 상태 표시
+    if entry.get('shouldTranslate') is False:
+        result['shouldTranslate'] = False
+
     if args.lang:
         # 특정 언어만 조회
         for lang in args.lang:

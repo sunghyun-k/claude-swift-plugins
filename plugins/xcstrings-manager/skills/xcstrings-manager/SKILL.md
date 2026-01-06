@@ -26,12 +26,16 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/status.py <xcstrings_path>
 **출력 예시:**
 
 ```
-Total keys: 100
-----------------------------------------
-ko       [====================] 100.0% (100/100)
-en       [====================-]  99.0% (99/100)
-ja       [==================--]  93.0% (93/100)
+Total keys: 124
+  - Translatable: 123
+  - No translate: 1 (APP_STORE)
+--------------------------------------------------
+ko       [====================] 100.0% (123/123)
+en       [====================] 100.0% (123/123)
+ja       [====================-]  99.0% (122/123)
 ```
+
+번역 제외(`shouldTranslate: false`) 키는 통계에서 분리되어 표시됩니다.
 
 ## 누락 번역 조회
 
@@ -77,6 +81,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/list.py <xcstrings_path>
 
 - `--count`: 개수만 출력
 - `--missing`: 누락 번역 조회 (위 섹션 참조)
+- `--no-translate`: 번역 제외 키만 조회
 
 ## 추가
 
@@ -91,6 +96,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/add.py <xcstrings_path> "KEY_NAME" [옵션
 - `--ko="값"`: 한국어 번역
 - `--en="값"`: 영어 번역
 - `--lang=LANG:VALUE`: 추가 언어 (여러 번 사용 가능)
+- `--no-translate`: 번역 제외로 마킹 (고유명사 등)
 
 **예시:**
 
@@ -105,6 +111,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/add.py file.xcstrings "BUTTON_SAVE" \
   --lang=ja:保存 \
   --lang=zh-Hans:保存 \
   --lang=fr:Enregistrer
+
+# 번역 제외 (고유명사)
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/add.py file.xcstrings "APP_STORE" --ko="App Store" --no-translate
 ```
 
 ## 수정
@@ -120,6 +129,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py <xcstrings_path> "KEY_NAME" [옵
 - `--ko="값"`: 한국어 번역 수정
 - `--en="값"`: 영어 번역 수정
 - `--lang=LANG:VALUE`: 추가 언어 수정 (여러 번 사용 가능)
+- `--no-translate`: 번역 제외로 마킹
+- `--translate`: 번역 제외 해제
 
 **예시:**
 
@@ -133,6 +144,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "KEY" \
   --en="English" \
   --lang=ja:日本語 \
   --lang=zh-Hans:中文
+
+# 번역 제외로 변경
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "APP_STORE" --no-translate
+
+# 번역 제외 해제
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "KEY" --translate
 ```
 
 ## 삭제
@@ -145,3 +162,4 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/delete.py <xcstrings_path> "KEY_NAME"
 
 - 키는 UPPER_SNAKE_CASE 사용 (예: `BUTTON_SAVE`, `ERROR_MESSAGE`)
 - 지원 언어 코드 예시: `ko`, `en`, `ja`, `zh-Hans`, `zh-Hant`, `fr`, `de`, `es`, `it`, `pt-BR`, `ru`, `ar`, `hi`, `th`, `vi`, `id`, `ms`, `tr`
+- 번역 제외 키 (`shouldTranslate: false`): App Store, iPhone 등 고유명사에 사용. 조회 시 `shouldTranslate: false`로 표시됨

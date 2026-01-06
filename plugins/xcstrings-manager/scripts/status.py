@@ -46,25 +46,42 @@ def main():
             print("No keys found")
         return
 
+    # 번역 제외 키 분리
+    no_translate_keys = [k for k, v in strings.items() if v.get('shouldTranslate') is False]
+    translatable_strings = {k: v for k, v in strings.items() if v.get('shouldTranslate') is not False}
+    translatable_count = len(translatable_strings)
+
     languages = get_all_languages(data)
     status = {}
 
     for lang in languages:
-        translated = sum(1 for entry in strings.values() if has_translation(entry, lang))
-        percentage = round(translated / total_keys * 100, 1)
+        # 번역 대상 키에서만 번역 완료율 계산
+        translated = sum(1 for entry in translatable_strings.values() if has_translation(entry, lang))
+        percentage = round(translated / translatable_count * 100, 1) if translatable_count > 0 else 0
         status[lang] = {
             'translated': translated,
-            'total': total_keys,
-            'missing': total_keys - translated,
+            'total': translatable_count,
+            'missing': translatable_count - translated,
             'percentage': percentage
         }
 
     if args.json:
-        print(json.dumps({'total_keys': total_keys, 'languages': status}, ensure_ascii=False, indent=2))
+        result = {
+            'total_keys': total_keys,
+            'translatable_keys': translatable_count,
+            'no_translate_keys': len(no_translate_keys),
+            'languages': status
+        }
+        if no_translate_keys:
+            result['no_translate_list'] = sorted(no_translate_keys)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         # 읽기 쉬운 형식 출력
         print(f"Total keys: {total_keys}")
-        print("-" * 40)
+        if no_translate_keys:
+            print(f"  - Translatable: {translatable_count}")
+            print(f"  - No translate: {len(no_translate_keys)} ({', '.join(sorted(no_translate_keys))})")
+        print("-" * 50)
 
         # 완료율 순으로 정렬
         sorted_langs = sorted(status.items(), key=lambda x: x[1]['percentage'], reverse=True)

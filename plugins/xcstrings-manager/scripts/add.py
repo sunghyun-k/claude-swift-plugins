@@ -26,6 +26,8 @@ def main():
     parser.add_argument('--en', help='English translation')
     parser.add_argument('--lang', action='append', type=parse_lang_arg, metavar='LANG:VALUE',
                         help='Additional language (e.g., --lang=ja:日本語). Can be used multiple times.')
+    parser.add_argument('--no-translate', action='store_true',
+                        help='Mark as "should not translate" (e.g., for proper nouns like "App Store")')
     args = parser.parse_args()
 
     # 최소 하나의 번역 필요
@@ -53,16 +55,23 @@ def main():
         for lang, value in args.lang:
             localizations[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
 
-    strings[args.key] = {
+    entry = {
         'extractionState': 'manual',
         'localizations': localizations
     }
+
+    if getattr(args, 'no_translate', False):
+        entry['shouldTranslate'] = False
+
+    strings[args.key] = entry
 
     save(data, args.file)
 
     result = {'status': 'success', 'key': args.key, 'translations': {}}
     for lang, loc in localizations.items():
         result['translations'][lang] = loc['stringUnit']['value']
+    if getattr(args, 'no_translate', False):
+        result['shouldTranslate'] = False
     print(json.dumps(result, ensure_ascii=False))
 
 if __name__ == "__main__":
