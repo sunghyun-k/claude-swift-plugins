@@ -6,6 +6,7 @@ import json
 import argparse
 from utils import load
 
+
 def get_value(entry, lang):
     """언어별 번역값 추출"""
     locs = entry.get('localizations', {})
@@ -19,10 +20,13 @@ def get_value(entry, lang):
                 for k, v in loc['variations']['plural'].items()}
     return None
 
+
 def main():
     parser = argparse.ArgumentParser(description='Get translation')
     parser.add_argument('file', help='Path to .xcstrings file')
     parser.add_argument('key', help='Key name')
+    parser.add_argument('--lang', action='append', metavar='LANG',
+                        help='Specific language(s) to show. Can be used multiple times. Default: all languages.')
     args = parser.parse_args()
 
     data = load(args.file)
@@ -33,11 +37,19 @@ def main():
         sys.exit(1)
 
     entry = strings[args.key]
-    result = {
-        'key': args.key,
-        'ko': get_value(entry, 'ko'),
-        'en': get_value(entry, 'en')
-    }
+    locs = entry.get('localizations', {})
+
+    result = {'key': args.key, 'translations': {}}
+
+    if args.lang:
+        # 특정 언어만 조회
+        for lang in args.lang:
+            result['translations'][lang] = get_value(entry, lang)
+    else:
+        # 모든 언어 조회
+        for lang in sorted(locs.keys()):
+            result['translations'][lang] = get_value(entry, lang)
+
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":

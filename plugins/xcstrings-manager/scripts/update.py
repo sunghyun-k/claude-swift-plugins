@@ -6,16 +6,31 @@ import json
 import argparse
 from utils import load, save
 
+
+def parse_lang_arg(value):
+    """--lang=ko:한국어 형태의 인자를 파싱"""
+    if ':' not in value:
+        raise argparse.ArgumentTypeError(f"Invalid format '{value}'. Use LANG:VALUE (e.g., ja:日本語)")
+    lang, val = value.split(':', 1)
+    return (lang.strip(), val)
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Update translation')
+    parser = argparse.ArgumentParser(
+        description='Update translation',
+        epilog='Example: update.py file.xcstrings "KEY" --ko="한국어" --lang=ja:日本語'
+    )
     parser.add_argument('file', help='Path to .xcstrings file')
     parser.add_argument('key', help='Key name')
     parser.add_argument('--ko', help='Korean translation')
     parser.add_argument('--en', help='English translation')
+    parser.add_argument('--lang', action='append', type=parse_lang_arg, metavar='LANG:VALUE',
+                        help='Additional language (e.g., --lang=ja:日本語). Can be used multiple times.')
     args = parser.parse_args()
 
-    if not args.ko and not args.en:
-        print(json.dumps({'error': 'At least --ko or --en required'}))
+    has_update = args.ko or args.en or args.lang
+    if not has_update:
+        print(json.dumps({'error': 'At least one translation required (--ko, --en, or --lang)'}))
         sys.exit(1)
 
     data = load(args.file)
@@ -27,14 +42,23 @@ def main():
 
     entry = strings[args.key]
     locs = entry.setdefault('localizations', {})
+    updated = {}
 
     if args.ko:
         locs['ko'] = {'stringUnit': {'state': 'translated', 'value': args.ko}}
+        updated['ko'] = args.ko
     if args.en:
         locs['en'] = {'stringUnit': {'state': 'translated', 'value': args.en}}
+        updated['en'] = args.en
+
+    # --lang 옵션 처리
+    if args.lang:
+        for lang, value in args.lang:
+            locs[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
+            updated[lang] = value
 
     save(data, args.file)
-    print(json.dumps({'status': 'success', 'key': args.key, 'ko': args.ko, 'en': args.en}))
+    print(json.dumps({'status': 'success', 'key': args.key, 'updated': updated}, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()
