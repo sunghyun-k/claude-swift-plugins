@@ -10,7 +10,7 @@ from utils import load, save
 def parse_lang_arg(value):
     """--lang=ko:한국어 형태의 인자를 파싱"""
     if ':' not in value:
-        raise argparse.ArgumentTypeError(f"Invalid format '{value}'. Use LANG:VALUE (e.g., ja:日本語)")
+        raise argparse.ArgumentTypeError(f"Invalid format '{value}'. Use LANG:VALUE (e.g., ko:한국어)")
     lang, val = value.split(':', 1)
     return (lang.strip(), val)
 
@@ -18,22 +18,18 @@ def parse_lang_arg(value):
 def main():
     parser = argparse.ArgumentParser(
         description='Add translation key',
-        epilog='Example: add.py file.xcstrings "KEY" --ko="한국어" --en="English" --lang=ja:日本語 --lang=zh-Hans:中文'
+        epilog='Example: add.py file.xcstrings "KEY" --lang=ko:한국어 --lang=en:English --lang=ja:日本語'
     )
     parser.add_argument('file', help='Path to .xcstrings file')
     parser.add_argument('key', help='Key name')
-    parser.add_argument('--ko', help='Korean translation')
-    parser.add_argument('--en', help='English translation')
     parser.add_argument('--lang', action='append', type=parse_lang_arg, metavar='LANG:VALUE',
-                        help='Additional language (e.g., --lang=ja:日本語). Can be used multiple times.')
+                        help='Language translation (e.g., --lang=ko:한국어). Can be used multiple times.')
     parser.add_argument('--no-translate', action='store_true',
                         help='Mark as "should not translate" (e.g., for proper nouns like "App Store")')
     args = parser.parse_args()
 
-    # 최소 하나의 번역 필요
-    has_translation = args.ko or args.en or args.lang
-    if not has_translation:
-        print(json.dumps({'error': 'At least one translation required (--ko, --en, or --lang)'}))
+    if not args.lang:
+        print(json.dumps({'error': 'At least one --lang required (e.g., --lang=ko:한국어)'}))
         sys.exit(1)
 
     data = load(args.file)
@@ -44,16 +40,8 @@ def main():
         sys.exit(1)
 
     localizations = {}
-
-    if args.ko:
-        localizations['ko'] = {'stringUnit': {'state': 'translated', 'value': args.ko}}
-    if args.en:
-        localizations['en'] = {'stringUnit': {'state': 'translated', 'value': args.en}}
-
-    # --lang 옵션 처리
-    if args.lang:
-        for lang, value in args.lang:
-            localizations[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
+    for lang, value in args.lang:
+        localizations[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
 
     entry = {
         'extractionState': 'manual',
