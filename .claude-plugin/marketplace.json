@@ -46,6 +46,16 @@
       },
       "category": "assets",
       "tags": ["ios", "xcassets", "colors", "images"]
+    },
+    {
+      "name": "xcode-mcp-cli",
+      "source": "./plugins/xcode-mcp-cli",
+      "description": "CLI wrapper for Xcode MCP tools. Build, test, preview, file management, and documentation search via persistent daemon.",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "xcode",
+      "tags": ["ios", "xcode", "mcp", "build", "test", "preview"]
     }
   ]
 }

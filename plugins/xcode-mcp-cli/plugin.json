@@ -1,0 +1,8 @@
+{
+  "name": "xcode-mcp-cli",
+  "version": "1.0.0",
+  "description": "CLI wrapper for Xcode MCP tools (xcrun mcpbridge). Provides subcommands for file management, build, test, diagnostics, preview, and documentation search via a persistent daemon.",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}
