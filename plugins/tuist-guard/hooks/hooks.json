@@ -1,0 +1,16 @@
+{
+  "description": "Blocks reading/editing of Tuist-generated .xcworkspace and .xcodeproj files",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-xcode-files.py"
+          }
+        ]
+      }
+    ]
+  }
+}
