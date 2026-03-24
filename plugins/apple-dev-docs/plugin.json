@@ -1,8 +1,0 @@
-{
-  "name": "apple-dev-docs",
-  "version": "1.1.0",
-  "description": "Apple 개발자 문서 접근 및 최신 프레임워크 가이드 (Liquid Glass, Foundation Models, Swift 6.2 등).",
-  "author": {
-    "name": "Sunghyun Kim"
-  }
-}
