@@ -317,13 +317,13 @@ PATH_KEYS = {"filePath", "sourceFilePath", "path", "sourcePath", "destinationPat
 
 def resolve_path(client, tab, path):
     """Try to resolve a filesystem path to an Xcode project path via glob."""
-    filename = os.path.basename(path)
-    if not filename:
+    normalized = path.lstrip("/")
+    if not normalized:
         return None
     try:
         result = client.tool("XcodeGlob", {
             "tabIdentifier": tab,
-            "pattern": f"**/{filename}",
+            "pattern": f"**/{normalized}",
         })
         text = ""
         for c in result.get("content", []):
@@ -331,12 +331,6 @@ def resolve_path(client, tab, path):
                 text += c["text"]
         data = json.loads(text)
         matches = data.get("matches", [])
-        # Prefer match that ends with the given path (most specific)
-        normalized = path.lstrip("/")
-        for m in matches:
-            if m.endswith(normalized):
-                return m
-        # Single match fallback
         if len(matches) == 1:
             return matches[0]
     except (MCPError, json.JSONDecodeError, KeyError):
