@@ -8,7 +8,6 @@ The daemon auto-starts on first use and communicates via Unix socket.
 import argparse
 import json
 import os
-import re
 import signal
 import socket
 import socketserver
@@ -244,136 +243,105 @@ def get_client(xcode_pid=None):
 S = {"action": "store_true", "default": None}  # shorthand for boolean flags
 
 TOOLS = [
-    ("windows", "XcodeListWindows", "List Xcode windows and tabs", False, []),
+    ("windows", "XcodeListWindows",
+     "Lists the current Xcode windows and their workspace information",
+     False, []),
 
-    ("ls", "XcodeLS", "List directory contents", True, [
-        ("path", "path", {"help": "project path"}),
-        ("--no-recursive", "recursive", {"action": "store_const", "const": False, "default": None}),
-        ("--ignore", "ignore", {"nargs": "+", "help": "patterns to skip"}),
-    ]),
+    ("build", "BuildProject",
+     "Builds an Xcode project and waits until the build completes",
+     True, []),
 
-    ("glob", "XcodeGlob", "Search files by pattern", True, [
-        ("--pattern", "pattern", {"help": "glob pattern (e.g. '*.swift')"}),
-        ("--path", "path", {"help": "directory to search in"}),
-    ]),
+    ("build-log", "GetBuildLog",
+     "Gets the log of the current or most recently finished build. Filter by severity, message regex, or file glob",
+     True, [
+         ("--severity", "severity", {"choices": ["remark", "warning", "error"]}),
+         ("--pattern", "pattern", {"help": "regex filter"}),
+         ("--glob", "glob", {"help": "file glob filter"}),
+     ]),
 
-    ("grep", "XcodeGrep", "Search file contents by regex", True, [
-        ("pattern", "pattern", {"help": "regex pattern"}),
-        ("--path", "path", {"help": "file or directory"}),
-        ("--glob", "glob", {"help": "filter by glob"}),
-        ("--type", "type", {"help": "file type (swift, js, ...)"}),
-        ("-i", "ignoreCase", S),
-        ("--multiline", "multiline", S),
-        ("--output", "outputMode", {"choices": ["content", "filesWithMatches", "count"]}),
-        ("-B", "linesBefore", {"type": int, "metavar": "N"}),
-        ("-A", "linesAfter", {"type": int, "metavar": "N"}),
-        ("-C", "linesContext", {"type": int, "metavar": "N"}),
-        ("-n", "showLineNumbers", S),
-        ("--head", "headLimit", {"type": int}),
-    ]),
+    ("test-list", "GetTestList",
+     "Gets all available tests from the active scheme's active test plan. Results limited to 100; full list written to fullTestListPath",
+     True, []),
 
-    ("read", "XcodeRead", "Read file contents", True, [
-        ("file_path", "filePath", {"help": "project file path"}),
-        ("--offset", "offset", {"type": int, "help": "start line number"}),
-        ("--limit", "limit", {"type": int, "help": "max lines to read"}),
-    ]),
+    ("test-all", "RunAllTests",
+     "Runs all tests from the active scheme's active test plan",
+     True, []),
 
-    ("write", "XcodeWrite", "Write/create a file", True, [
-        ("file_path", "filePath", {"help": "project file path"}),
-        ("content", "content", {"nargs": "?", "help": "content (stdin if omitted)"}),
-    ]),
+    ("test", "RunSomeTests",
+     "Runs specific tests using the active scheme's active test plan",
+     True, [
+         ("tests", "_tests_raw", {"nargs": "+", "metavar": "target/id", "help": "target/identifier pairs"}),
+     ]),
 
-    ("edit", "XcodeUpdate", "Edit file (find & replace)", True, [
-        ("file_path", "filePath", {"help": "project file path"}),
-        ("--old", "oldString", {"required": True, "help": "text to find"}),
-        ("--new", "newString", {"required": True, "help": "replacement text"}),
-        ("--all", "replaceAll", S),
-    ]),
+    ("diagnostics", "XcodeRefreshCodeIssuesInFile",
+     "Retrieves current compiler diagnostics (errors, warnings, notes) for a file",
+     True, [
+         ("file_path", "filePath", {"help": "source file path"}),
+     ]),
 
-    ("rm", "XcodeRM", "Remove file or directory", True, [
-        ("path", "path", {"help": "project path"}),
-        ("--keep-files", "deleteFiles", {"action": "store_const", "const": False, "default": None}),
-        ("--recursive", "recursive", S),
-    ]),
+    ("issues", "XcodeListNavigatorIssues",
+     "Lists the currently known issues in Xcode's Issue Navigator. Filter by severity, regex, or glob",
+     True, [
+         ("--severity", "severity", {"choices": ["remark", "warning", "error"]}),
+         ("--pattern", "pattern", {"help": "regex filter"}),
+         ("--glob", "glob", {"help": "file glob filter"}),
+     ]),
 
-    ("mv", "XcodeMV", "Move or copy files", True, [
-        ("source", "sourcePath", {"help": "source path"}),
-        ("dest", "destinationPath", {"help": "destination path"}),
-        ("--copy", "operation", {"action": "store_const", "const": "copy", "default": None}),
-        ("--overwrite", "overwriteExisting", S),
-    ]),
+    ("preview", "RenderPreview",
+     "Builds and renders a SwiftUI Preview and returns a snapshot image",
+     True, [
+         ("file_path", "sourceFilePath", {"help": "source file path"}),
+         ("--index", "previewDefinitionIndexInFile", {"type": int, "help": "preview index (0-based)"}),
+         ("--timeout", "timeout", {"type": int, "help": "timeout in seconds"}),
+     ]),
 
-    ("mkdir", "XcodeMakeDir", "Create directory", True, [
-        ("path", "directoryPath", {"help": "directory path"}),
-    ]),
+    ("exec", "ExecuteSnippet",
+     "Builds and runs a code snippet in the context of a source file. Output comes from print statements in the snippet",
+     True, [
+         ("file_path", "sourceFilePath", {"help": "source file for context"}),
+         ("snippet", "codeSnippet", {"nargs": "?", "help": "code snippet (stdin if omitted)"}),
+     ]),
 
-    ("build", "BuildProject", "Build the project", True, []),
-
-    ("build-log", "GetBuildLog", "Show build log", True, [
-        ("--severity", "severity", {"choices": ["remark", "warning", "error"]}),
-        ("--pattern", "pattern", {"help": "regex filter"}),
-        ("--glob", "glob", {"help": "file glob filter"}),
-    ]),
-
-    ("test-list", "GetTestList", "List available tests", True, []),
-
-    ("test-all", "RunAllTests", "Run all tests", True, []),
-
-    ("test", "RunSomeTests", "Run specific tests", True, [
-        ("tests", "_tests_raw", {"nargs": "+", "metavar": "target/id", "help": "target/identifier pairs"}),
-    ]),
-
-    ("diagnostics", "XcodeRefreshCodeIssuesInFile", "Get file diagnostics", True, [
-        ("file_path", "filePath", {"help": "project file path"}),
-    ]),
-
-    ("issues", "XcodeListNavigatorIssues", "List workspace issues", True, [
-        ("--severity", "severity", {"choices": ["remark", "warning", "error"]}),
-        ("--pattern", "pattern", {"help": "regex filter"}),
-        ("--glob", "glob", {"help": "file glob filter"}),
-    ]),
-
-    ("preview", "RenderPreview", "Render a SwiftUI preview", True, [
-        ("file_path", "sourceFilePath", {"help": "source file path"}),
-        ("--index", "previewDefinitionIndexInFile", {"type": int, "help": "preview index (0-based)"}),
-        ("--timeout", "timeout", {"type": int, "help": "timeout in seconds"}),
-    ]),
-
-    ("exec", "ExecuteSnippet", "Execute a code snippet", True, [
-        ("file_path", "sourceFilePath", {"help": "source file for context"}),
-        ("snippet", "codeSnippet", {"nargs": "?", "help": "code snippet (stdin if omitted)"}),
-    ]),
-
-    ("docs", "DocumentationSearch", "Search Apple developer docs", False, [
-        ("query", "query", {"help": "search query"}),
-        ("--frameworks", "frameworks", {"nargs": "+", "help": "limit to frameworks"}),
-    ]),
+    ("docs", "DocumentationSearch",
+     "Searches Apple Developer Documentation using semantic matching",
+     False, [
+         ("query", "query", {"help": "search query"}),
+         ("--frameworks", "frameworks", {"nargs": "+", "help": "limit to frameworks"}),
+     ]),
 ]
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────
+# Path keys that refer to file/directory paths in MCP tools
+PATH_KEYS = {"filePath", "sourceFilePath", "path", "sourcePath", "destinationPath", "directoryPath"}
 
 
-def detect_tab(client):
-    """Auto-detect the workspace tab identifier."""
-    result = client.tool("XcodeListWindows")
-    text = ""
-    for c in result.get("content", []):
-        if c.get("type") == "text":
-            text += c["text"]
-    tabs = re.findall(r"tabIdentifier:\s*([^\s,]+)", text)
-    if not tabs:
-        tabs = re.findall(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", text, re.I)
-    if not tabs:
-        # fallback: grab any word after "tab" keyword
-        tabs = re.findall(r"tab\w*:\s*(\S+)", text, re.I)
-    if not tabs:
-        print("Available windows:\n" + text, file=sys.stderr)
-        sys.exit("Error: could not auto-detect tab. Use --tab <id> (see output above)")
-    if len(tabs) > 1:
-        print("Multiple tabs found:\n" + text, file=sys.stderr)
-        sys.exit("Error: multiple tabs found. Use --tab <id> to specify")
-    return tabs[0]
+def resolve_path(client, tab, path):
+    """Try to resolve a filesystem path to an Xcode project path via glob."""
+    filename = os.path.basename(path)
+    if not filename:
+        return None
+    try:
+        result = client.tool("XcodeGlob", {
+            "tabIdentifier": tab,
+            "pattern": f"**/{filename}",
+        })
+        text = ""
+        for c in result.get("content", []):
+            if c.get("type") == "text":
+                text += c["text"]
+        data = json.loads(text)
+        matches = data.get("matches", [])
+        # Prefer match that ends with the given path (most specific)
+        normalized = path.lstrip("/")
+        for m in matches:
+            if m.endswith(normalized):
+                return m
+        # Single match fallback
+        if len(matches) == 1:
+            return matches[0]
+    except (MCPError, json.JSONDecodeError, KeyError):
+        pass
+    return None
 
 
 def build_args(tool_def, parsed, tab):
@@ -440,7 +408,6 @@ def main():
         prog="xcode-mcp",
         description="CLI for Xcode MCP tools (xcrun mcpbridge)",
     )
-    parser.add_argument("--tab", metavar="ID", help="workspace tab identifier (auto-detected)")
     parser.add_argument("--pid", type=int, metavar="PID", help="Xcode process ID")
     parser.add_argument("--json", action="store_true", dest="raw_json", help="raw JSON output")
 
@@ -451,6 +418,9 @@ def main():
     for tool_def in TOOLS:
         cmd_name, mcp_tool, help_text, needs_tab, params = tool_def
         sp = sub.add_parser(cmd_name, help=help_text)
+        if needs_tab:
+            sp.add_argument("--tab", metavar="ID", required=True,
+                            help="workspace tab identifier (use 'windows' to find)")
         for cli_arg, mcp_key, kw in params:
             sp.add_argument(cli_arg, **kw)
         tool_map[cmd_name] = tool_def
@@ -487,12 +457,25 @@ def main():
 
     client = get_client(xcode_pid=args.pid)
     try:
-        tab = args.tab
-        if needs_tab and not tab:
-            tab = detect_tab(client)
+        tab = getattr(args, "tab", None)
 
         mcp_args = build_args(tool_def, args, tab)
-        result = client.tool(mcp_tool, mcp_args)
+        try:
+            result = client.tool(mcp_tool, mcp_args)
+        except MCPError as e:
+            err_msg = str(e).lower()
+            if "not found" not in err_msg:
+                raise
+            # Try resolving file paths and retry
+            resolved_any = False
+            for key in PATH_KEYS & mcp_args.keys():
+                resolved = resolve_path(client, tab, mcp_args[key])
+                if resolved and resolved != mcp_args[key]:
+                    mcp_args[key] = resolved
+                    resolved_any = True
+            if not resolved_any:
+                raise
+            result = client.tool(mcp_tool, mcp_args)
         print_result(result, raw_json=args.raw_json)
     except MCPError as e:
         sys.exit(f"Error: {e}")
