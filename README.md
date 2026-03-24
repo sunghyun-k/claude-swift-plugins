@@ -26,7 +26,8 @@ Install individual plugins:
 
 ```shell
 /plugin install format-swift@claude-swift-plugins
-/plugin install apple-dev-docs@claude-swift-plugins
+/plugin install xcode-mcp-cli@claude-swift-plugins
+/plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
 ```
@@ -53,14 +54,35 @@ Automatically formats Swift files and reports lint warnings after editing.
 - nicklockwood/SwiftFormat
 - SwiftLint
 
-### apple-dev-docs
+### xcode-mcp-cli
 
-Automatically converts `developer.apple.com` URLs to `sosumi.ai` for better Apple documentation access in Claude Code.
+CLI wrapper for Xcode MCP tools (`xcrun mcpbridge`). Provides build, test, diagnostics, preview, code execution, and documentation search via a persistent daemon.
+
+**How it works:**
+- Skill: Xcode-specific commands (build, test, preview, diagnostics, docs, etc.)
+- Daemon auto-starts on first use; only requires permission approval once
+
+**Features:**
+- Build and view build logs
+- Run tests (all or specific)
+- Render SwiftUI previews
+- Get compiler diagnostics for files
+- Execute code snippets in project context
+- Search Apple Developer Documentation
+- Auto-resolves filesystem paths to Xcode project paths
+
+### tuist-guard
+
+Prevents reading/editing Tuist-generated Xcode project files.
 
 **How it works:**
 - Hook: `PreToolUse`
-- Matcher: `WebFetch`
-- Rewrites Apple documentation URLs before fetching
+- Matcher: `Read|Edit|Write`
+- Blocks access to `.xcworkspace` and `.xcodeproj` files and their contents
+
+**When to use:**
+- Projects that use Tuist for project generation
+- Prevents wasting tokens on generated files that should not be read or modified directly
 
 ### xcstrings-manager
 
