@@ -18,16 +18,6 @@
       "tags": ["ios", "swift", "formatting"]
     },
     {
-      "name": "apple-dev-docs",
-      "source": "./plugins/apple-dev-docs",
-      "description": "Automatically converts developer.apple.com URLs to sosumi.ai for Apple documentation access.",
-      "author": {
-        "name": "Sunghyun Kim"
-      },
-      "category": "hooks",
-      "tags": ["ios", "apple", "documentation"]
-    },
-    {
       "name": "xcstrings-manager",
       "source": "./plugins/xcstrings-manager",
       "description": "Tools for adding, updating, deleting, and reading translations in iOS .xcstrings files.",
@@ -50,12 +40,22 @@
     {
       "name": "xcode-mcp-cli",
       "source": "./plugins/xcode-mcp-cli",
-      "description": "CLI wrapper for Xcode MCP tools. Build, test, preview, file management, and documentation search via persistent daemon.",
+      "description": "CLI wrapper for Xcode MCP tools. Build, test, preview, diagnostics, and documentation search via persistent daemon.",
       "author": {
         "name": "Sunghyun Kim"
       },
       "category": "xcode",
       "tags": ["ios", "xcode", "mcp", "build", "test", "preview"]
+    },
+    {
+      "name": "tuist-guard",
+      "source": "./plugins/tuist-guard",
+      "description": "Prevents reading/editing Tuist-generated .xcworkspace and .xcodeproj files.",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "hooks",
+      "tags": ["ios", "tuist", "xcode"]
     }
   ]
 }
