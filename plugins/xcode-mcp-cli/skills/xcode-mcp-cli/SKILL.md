@@ -16,7 +16,8 @@ allowed-tools: Bash(python3 *), Read(//var/folders/**/ActionArtifacts/**)
 python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py <command> [options]
 ```
 
-**글로벌 옵션:** `--tab ID` (필수, 탭 의존 명령), `--pid PID`, `--json` (raw JSON 출력)
+**글로벌 옵션:** `--pid PID`, `--json` (raw JSON 출력)
+**서브커맨드 옵션:** `--tab ID` (탭 의존 명령에서 필수, `windows`로 확인)
 
 ## 워크플로우
 
@@ -27,7 +28,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py <command> [options]
 python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py windows
 
 # 2. 출력에서 tabIdentifier 확인 후, --tab 옵션으로 사용
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab <tabIdentifier> build
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py build --tab <tabIdentifier>
 ```
 
 탭 ID는 Xcode를 재시작하면 변경됩니다. 명령 실패 시 `windows`로 다시 확인하세요.
@@ -46,36 +47,36 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py stop
 ## 빌드
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID build
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID build-log --severity warning
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py build --tab ID
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py build-log --tab ID --severity warning
 ```
 
 ## 테스트
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID test-list
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID test-all
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID test MyTarget/testMethod
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py test-list --tab ID
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py test-all --tab ID
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py test --tab ID MyTarget/testMethod
 ```
 
 ## 진단
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID diagnostics <file-path>
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID issues --severity warning
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py diagnostics --tab ID <file-path>
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py issues --tab ID --severity warning
 ```
 
 ## SwiftUI 프리뷰
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID preview <source-file-path>
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID preview <source-file-path> --index 1 --timeout 180
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py preview --tab ID <source-file-path>
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py preview --tab ID <source-file-path> --index 1 --timeout 180
 ```
 
 ## 코드 실행
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py --tab ID exec <source-file> 'print("hello")'
+python3 ${CLAUDE_SKILL_DIR}/scripts/xcode_mcp.py exec --tab ID <source-file> 'print("hello")'
 ```
 
 ## Apple 문서 검색 (탭 불필요)
