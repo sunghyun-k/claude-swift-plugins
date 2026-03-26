@@ -315,24 +315,40 @@ TOOLS = [
 PATH_KEYS = {"filePath", "sourceFilePath", "path", "sourcePath", "destinationPath", "directoryPath"}
 
 
+def _glob_once(client, tab, pattern):
+    """Run XcodeGlob and return the list of matches."""
+    result = client.tool("XcodeGlob", {
+        "tabIdentifier": tab,
+        "pattern": pattern,
+    })
+    text = ""
+    for c in result.get("content", []):
+        if c.get("type") == "text":
+            text += c["text"]
+    data = json.loads(text)
+    return data.get("matches", [])
+
+
 def resolve_path(client, tab, path):
     """Try to resolve a filesystem path to an Xcode project path via glob."""
     normalized = path.lstrip("/")
     if not normalized:
         return None
+
+    parts = normalized.split("/")
+    # For absolute paths, try progressively shorter suffixes
+    # e.g. /A/B/C/Sources/File.swift -> Sources/File.swift, then File.swift
+    # For relative paths, try the full path first, then shorter suffixes
+    candidates = []
+    for i in range(len(parts)):
+        suffix = "/".join(parts[i:])
+        candidates.append(suffix)
+
     try:
-        result = client.tool("XcodeGlob", {
-            "tabIdentifier": tab,
-            "pattern": f"**/{normalized}",
-        })
-        text = ""
-        for c in result.get("content", []):
-            if c.get("type") == "text":
-                text += c["text"]
-        data = json.loads(text)
-        matches = data.get("matches", [])
-        if len(matches) == 1:
-            return matches[0]
+        for suffix in candidates:
+            matches = _glob_once(client, tab, f"**/{suffix}")
+            if len(matches) == 1:
+                return matches[0]
     except (MCPError, json.JSONDecodeError, KeyError):
         pass
     return None
