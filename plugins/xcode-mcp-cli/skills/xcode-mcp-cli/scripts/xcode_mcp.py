@@ -218,8 +218,8 @@ def run_server(xcode_pid=None):
         cleanup()
 
 
-def get_client(xcode_pid=None):
-    """Get a client, auto-starting daemon if needed."""
+def _connect_or_start(xcode_pid=None):
+    """Connect to existing daemon or start a new one. Returns client or None."""
     if os.path.exists(SOCK_PATH):
         try:
             return RemoteMCP()
@@ -227,6 +227,7 @@ def get_client(xcode_pid=None):
             pass
 
     print("Starting MCP daemon...", file=sys.stderr)
+    stop_daemon()
     start_daemon_bg(xcode_pid)
     for _ in range(100):  # wait up to 10s (first run may need permission approval)
         time.sleep(0.1)
@@ -234,7 +235,41 @@ def get_client(xcode_pid=None):
             return RemoteMCP()
         except (ConnectionRefusedError, FileNotFoundError, OSError):
             continue
-    sys.exit("Error: could not connect to daemon (is Xcode running?)")
+    return None
+
+
+def get_client(xcode_pid=None):
+    """Get a client, auto-starting daemon if needed."""
+    client = _connect_or_start(xcode_pid)
+    if client is None:
+        sys.exit("Error: could not connect to daemon (is Xcode running?)")
+    return client
+
+
+def _is_daemon_error(e):
+    """Check if an MCPError is a daemon connection issue."""
+    msg = str(e).lower()
+    return "daemon connection lost" in msg or "mcpbridge closed" in msg
+
+
+def call_with_retry(client, name, args=None, xcode_pid=None):
+    """Call a tool, retrying once if the daemon died."""
+    try:
+        return client, client.tool(name, args)
+    except MCPError as e:
+        if not _is_daemon_error(e):
+            raise
+    # Daemon died — stop, restart, reconnect
+    print("Daemon connection lost. Restarting...", file=sys.stderr)
+    try:
+        client.close()
+    except Exception:
+        pass
+    stop_daemon()
+    client = _connect_or_start(xcode_pid)
+    if client is None:
+        sys.exit("Error: could not reconnect to daemon (is Xcode running?)")
+    return client, client.tool(name, args)
 
 
 # ── Tool Definitions ────────────────────────────────────────────────────
@@ -315,30 +350,27 @@ TOOLS = [
 PATH_KEYS = {"filePath", "sourceFilePath", "path", "sourcePath", "destinationPath", "directoryPath"}
 
 
-def _glob_once(client, tab, pattern):
-    """Run XcodeGlob and return the list of matches."""
-    result = client.tool("XcodeGlob", {
+def _glob_once(client, tab, pattern, xcode_pid=None):
+    """Run XcodeGlob and return (client, matches)."""
+    client, result = call_with_retry(client, "XcodeGlob", {
         "tabIdentifier": tab,
         "pattern": pattern,
-    })
+    }, xcode_pid=xcode_pid)
     text = ""
     for c in result.get("content", []):
         if c.get("type") == "text":
             text += c["text"]
     data = json.loads(text)
-    return data.get("matches", [])
+    return client, data.get("matches", [])
 
 
-def resolve_path(client, tab, path):
+def resolve_path(client, tab, path, xcode_pid=None):
     """Try to resolve a filesystem path to an Xcode project path via glob."""
     normalized = path.lstrip("/")
     if not normalized:
         return None
 
     parts = normalized.split("/")
-    # For absolute paths, try progressively shorter suffixes
-    # e.g. /A/B/C/Sources/File.swift -> Sources/File.swift, then File.swift
-    # For relative paths, try the full path first, then shorter suffixes
     candidates = []
     for i in range(len(parts)):
         suffix = "/".join(parts[i:])
@@ -346,7 +378,7 @@ def resolve_path(client, tab, path):
 
     try:
         for suffix in candidates:
-            matches = _glob_once(client, tab, f"**/{suffix}")
+            client, matches = _glob_once(client, tab, f"**/{suffix}", xcode_pid=xcode_pid)
             if len(matches) == 1:
                 return matches[0]
     except (MCPError, json.JSONDecodeError, KeyError):
@@ -471,7 +503,7 @@ def main():
 
         mcp_args = build_args(tool_def, args, tab)
         try:
-            result = client.tool(mcp_tool, mcp_args)
+            client, result = call_with_retry(client, mcp_tool, mcp_args, xcode_pid=args.pid)
         except MCPError as e:
             err_msg = str(e).lower()
             if "not found" not in err_msg:
@@ -479,13 +511,13 @@ def main():
             # Try resolving file paths and retry
             resolved_any = False
             for key in PATH_KEYS & mcp_args.keys():
-                resolved = resolve_path(client, tab, mcp_args[key])
+                resolved = resolve_path(client, tab, mcp_args[key], xcode_pid=args.pid)
                 if resolved and resolved != mcp_args[key]:
                     mcp_args[key] = resolved
                     resolved_any = True
             if not resolved_any:
                 raise
-            result = client.tool(mcp_tool, mcp_args)
+            client, result = call_with_retry(client, mcp_tool, mcp_args, xcode_pid=args.pid)
         print_result(result, raw_json=args.raw_json)
     except MCPError as e:
         sys.exit(f"Error: {e}")
