@@ -193,7 +193,13 @@ def stop_daemon():
 
 def run_server(xcode_pid=None):
     stop_daemon()
-    mcp = MCP(pid=xcode_pid)
+    try:
+        mcp = MCP(pid=xcode_pid)
+    except (MCPError, OSError, FileNotFoundError) as e:
+        # mcpbridge failed to start — exit cleanly so the client retry path
+        # observes a missing daemon instead of a stale socket
+        sys.stderr.write(f"Failed to start mcpbridge: {e}\n")
+        sys.exit(1)
     server = DaemonServer(mcp)
 
     with open(PID_PATH, "w") as f:
@@ -218,23 +224,45 @@ def run_server(xcode_pid=None):
         cleanup()
 
 
-def _connect_or_start(xcode_pid=None):
-    """Connect to existing daemon or start a new one. Returns client or None."""
-    if os.path.exists(SOCK_PATH):
+_DAEMON_STARTUP_ATTEMPTS = 2
+_DAEMON_READY_POLL_SECONDS = 0.1
+_DAEMON_READY_TIMEOUT_TICKS = 100  # 0.1s × 100 = 10s per attempt
+
+
+def _connect_or_start(xcode_pid=None, attempts=_DAEMON_STARTUP_ATTEMPTS):
+    """Connect to existing daemon or (re)start one. Returns client or None."""
+    # Try a healthy existing daemon first
+    if daemon_running() and os.path.exists(SOCK_PATH):
         try:
             return RemoteMCP()
         except (ConnectionRefusedError, FileNotFoundError, OSError):
             pass
 
-    print("Starting MCP daemon...", file=sys.stderr)
+    # Clean any stale pid/socket before spawning a fresh daemon
     stop_daemon()
-    start_daemon_bg(xcode_pid)
-    for _ in range(100):  # wait up to 10s (first run may need permission approval)
-        time.sleep(0.1)
-        try:
-            return RemoteMCP()
-        except (ConnectionRefusedError, FileNotFoundError, OSError):
-            continue
+
+    for attempt in range(attempts):
+        msg = (
+            "Starting MCP daemon..."
+            if attempt == 0
+            else f"Retrying daemon startup ({attempt + 1}/{attempts})..."
+        )
+        print(msg, file=sys.stderr)
+        start_daemon_bg(xcode_pid)
+
+        for _ in range(_DAEMON_READY_TIMEOUT_TICKS):
+            time.sleep(_DAEMON_READY_POLL_SECONDS)
+            try:
+                return RemoteMCP()
+            except (ConnectionRefusedError, FileNotFoundError, OSError):
+                # If the daemon process already exited, no point waiting longer
+                if not daemon_running() and not os.path.exists(SOCK_PATH):
+                    break
+                continue
+
+        # Daemon never became ready — clear leftover state before retrying
+        stop_daemon()
+
     return None
 
 
@@ -252,24 +280,34 @@ def _is_daemon_error(e):
     return "daemon connection lost" in msg or "mcpbridge closed" in msg
 
 
-def call_with_retry(client, name, args=None, xcode_pid=None):
-    """Call a tool, retrying once if the daemon died."""
-    try:
-        return client, client.tool(name, args)
-    except MCPError as e:
-        if not _is_daemon_error(e):
-            raise
-    # Daemon died — stop, restart, reconnect
-    print("Daemon connection lost. Restarting...", file=sys.stderr)
-    try:
-        client.close()
-    except Exception:
-        pass
-    stop_daemon()
-    client = _connect_or_start(xcode_pid)
-    if client is None:
-        sys.exit("Error: could not reconnect to daemon (is Xcode running?)")
-    return client, client.tool(name, args)
+_CALL_MAX_RETRIES = 2
+
+
+def call_with_retry(client, name, args=None, xcode_pid=None, max_retries=_CALL_MAX_RETRIES):
+    """Call a tool, restarting the daemon and retrying on connection loss."""
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            return client, client.tool(name, args)
+        except MCPError as e:
+            if not _is_daemon_error(e):
+                raise
+            last_error = e
+            if attempt >= max_retries:
+                break
+            print(
+                f"Daemon error ({e}). Restarting (attempt {attempt + 1}/{max_retries})...",
+                file=sys.stderr,
+            )
+            try:
+                client.close()
+            except Exception:
+                pass
+            stop_daemon()
+            client = _connect_or_start(xcode_pid)
+            if client is None:
+                sys.exit("Error: could not reconnect to daemon (is Xcode running?)")
+    raise last_error
 
 
 # ── Tool Definitions ────────────────────────────────────────────────────
