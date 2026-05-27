@@ -30,6 +30,7 @@ Install individual plugins:
 /plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
+/plugin install apple-docs-json@claude-swift-plugins
 ```
 
 Or browse and install interactively:
@@ -120,3 +121,17 @@ CRUD management for xcassets resources.
 - List and delete imagesets
 - Support for PNG, JPEG, PDF, and SVG formats
 - Single scale mode for vector images
+
+### apple-docs-json
+
+Rewrites Apple Developer documentation URLs to the DocC data (`.json`) endpoint so WebFetch can read them.
+
+**How it works:**
+- Hook: `PreToolUse`
+- Matcher: `WebFetch`
+- Rewrites `developer.apple.com/documentation/...` (and `/tutorials/...`) URLs to `developer.apple.com/tutorials/data/...json`, returning structured DocC source instead of the JavaScript-rendered page
+- Non-documentation Apple URLs (videos, forums, etc.) and non-Apple URLs pass through untouched
+
+**Why:**
+- Apple docs are a JS-rendered single-page app, so plain HTML fetches often come back empty
+- The `.json` data endpoint is the same source the official site renders, served from Apple's own domain (no third-party proxy)

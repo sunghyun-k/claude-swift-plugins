@@ -1,0 +1,16 @@
+{
+  "description": "Rewrites developer.apple.com documentation URLs to the DocC data (.json) endpoint so WebFetch can read them",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/rewrite-apple-url.py"
+          }
+        ]
+      }
+    ]
+  }
+}

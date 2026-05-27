@@ -1,0 +1,8 @@
+{
+  "name": "apple-docs-json",
+  "version": "1.0.0",
+  "description": "Rewrites Apple Developer documentation WebFetch URLs to the DocC data (.json) endpoint, so Claude can read docs without the JavaScript-rendered site getting in the way.",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}
