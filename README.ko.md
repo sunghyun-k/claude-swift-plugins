@@ -24,7 +24,6 @@ iOS/Swift 개발을 위한 Claude Code 플러그인 모음입니다.
 
 ```shell
 /plugin install format-swift@claude-swift-plugins
-/plugin install xcode-mcp-cli@claude-swift-plugins
 /plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
@@ -52,23 +51,6 @@ Swift 파일 편집 후 자동으로 포맷팅하고 린트 경고를 보고합�
 - Apple swift-format
 - nicklockwood/SwiftFormat
 - SwiftLint
-
-### xcode-mcp-cli
-
-Xcode MCP 도구(`xcrun mcpbridge`) CLI 래퍼. 데몬 방식으로 빌드, 테스트, 진단, 프리뷰, 코드 실행, 문서 검색을 제공합니다.
-
-**작동 원리:**
-- Skill: Xcode 전용 명령 (build, test, preview, diagnostics, docs 등)
-- 데몬은 첫 호출 시 자동 시작, 권한 승인은 최초 1회만 필요
-
-**기능:**
-- 빌드 및 빌드 로그 조회
-- 테스트 실행 (전체 또는 특정 테스트)
-- SwiftUI 프리뷰 렌더링
-- 파일별 컴파일러 진단 조회
-- 프로젝트 컨텍스트에서 코드 스니펫 실행
-- Apple Developer Documentation 검색
-- 파일시스템 경로 → Xcode 프로젝트 경로 자동 변환
 
 ### tuist-guard
 

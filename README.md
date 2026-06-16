@@ -26,7 +26,6 @@ Install individual plugins:
 
 ```shell
 /plugin install format-swift@claude-swift-plugins
-/plugin install xcode-mcp-cli@claude-swift-plugins
 /plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
@@ -54,23 +53,6 @@ Automatically formats Swift files and reports lint warnings after editing.
 - Apple swift-format
 - nicklockwood/SwiftFormat
 - SwiftLint
-
-### xcode-mcp-cli
-
-CLI wrapper for Xcode MCP tools (`xcrun mcpbridge`). Provides build, test, diagnostics, preview, code execution, and documentation search via a persistent daemon.
-
-**How it works:**
-- Skill: Xcode-specific commands (build, test, preview, diagnostics, docs, etc.)
-- Daemon auto-starts on first use; only requires permission approval once
-
-**Features:**
-- Build and view build logs
-- Run tests (all or specific)
-- Render SwiftUI previews
-- Get compiler diagnostics for files
-- Execute code snippets in project context
-- Search Apple Developer Documentation
-- Auto-resolves filesystem paths to Xcode project paths
 
 ### tuist-guard
 
