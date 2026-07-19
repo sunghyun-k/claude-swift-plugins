@@ -4,7 +4,7 @@
 import sys
 import json
 import argparse
-from utils import load, save
+from utils import load, save, parse_plural_arg, parse_json_arg, collect_plurals, plural_localization
 
 
 def parse_lang_arg(value):
@@ -24,12 +24,18 @@ def main():
     parser.add_argument('key', help='Key name')
     parser.add_argument('--lang', action='append', type=parse_lang_arg, metavar='LANG:VALUE',
                         help='Language translation (e.g., --lang=ko:한국어). Can be used multiple times.')
+    parser.add_argument('--plural', action='append', type=parse_plural_arg, metavar='LANG:CATEGORY:VALUE',
+                        help='Plural variation (e.g., --plural=ru:few:%%lld файла). '
+                             'Categories: zero/one/two/few/many/other. Can be used multiple times.')
+    parser.add_argument('--json', action='append', type=parse_json_arg, metavar='LANG:JSON', dest='json_loc',
+                        help='Raw localization object as JSON, for complex structures like '
+                             'substitutions or device variations (e.g., --json=en:\'{"stringUnit": ...}\')')
     parser.add_argument('--no-translate', action='store_true',
                         help='Mark as "should not translate" (e.g., for proper nouns like "App Store")')
     args = parser.parse_args()
 
-    if not args.lang:
-        print(json.dumps({'error': 'At least one --lang required (e.g., --lang=ko:한국어)'}))
+    if not (args.lang or args.plural or args.json_loc):
+        print(json.dumps({'error': 'At least one of --lang, --plural, or --json required'}))
         sys.exit(1)
 
     data = load(args.file)
@@ -40,8 +46,18 @@ def main():
         sys.exit(1)
 
     localizations = {}
-    for lang, value in args.lang:
+    for lang, value in (args.lang or []):
         localizations[lang] = {'stringUnit': {'state': 'translated', 'value': value}}
+    for lang, categories in collect_plurals(args.plural or []).items():
+        if lang in localizations:
+            print(json.dumps({'error': f"Language '{lang}' given in both --lang and --plural"}))
+            sys.exit(1)
+        localizations[lang] = plural_localization(categories)
+    for lang, obj in (args.json_loc or []):
+        if lang in localizations:
+            print(json.dumps({'error': f"Language '{lang}' given more than once (--json overlaps --lang/--plural)"}))
+            sys.exit(1)
+        localizations[lang] = obj
 
     entry = {
         'extractionState': 'manual',
@@ -57,7 +73,15 @@ def main():
 
     result = {'status': 'success', 'key': args.key, 'translations': {}}
     for lang, loc in localizations.items():
-        result['translations'][lang] = loc['stringUnit']['value']
+        if 'stringUnit' in loc:
+            result['translations'][lang] = loc['stringUnit']['value']
+        elif 'variations' in loc and 'plural' in loc['variations']:
+            result['translations'][lang] = {
+                cat: v.get('stringUnit', {}).get('value')
+                for cat, v in loc['variations']['plural'].items()
+            }
+        else:
+            result['translations'][lang] = loc
     if getattr(args, 'no_translate', False):
         result['shouldTranslate'] = False
     print(json.dumps(result, ensure_ascii=False))

@@ -93,8 +93,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/add.py <xcstrings_path> "KEY_NAME" --lang=
 
 **옵션:**
 
-- `--lang=LANG:VALUE`: 언어별 번역 (여러 번 사용 가능, 최소 1개 필수)
+- `--lang=LANG:VALUE`: 언어별 번역 (여러 번 사용 가능)
+- `--plural=LANG:CATEGORY:VALUE`: 복수형 variation (여러 번 사용 가능, 아래 복수형 섹션 참조)
+- `--json=LANG:JSON`: localization 객체를 JSON으로 직접 지정 (substitutions 등 복합 구조용)
 - `--no-translate`: 번역 제외로 마킹 (고유명사 등)
+
+`--lang`, `--plural`, `--json` 중 최소 1개 필수. 같은 언어를 두 옵션에 동시에 줄 수 없음.
 
 **예시:**
 
@@ -125,7 +129,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py <xcstrings_path> "KEY_NAME" [옵
 
 **옵션:**
 
-- `--lang=LANG:VALUE`: 언어별 번역 수정 (여러 번 사용 가능)
+- `--lang=LANG:VALUE`: 언어별 번역 수정 (해당 언어를 단일 stringUnit으로 교체)
+- `--plural=LANG:CATEGORY:VALUE`: 복수형 variation 수정. 해당 언어의 기존 plural 카테고리에 **병합**되므로 일부 카테고리만 갱신 가능
+- `--json=LANG:JSON`: 해당 언어의 localization 객체 전체를 JSON으로 교체
 - `--no-translate`: 번역 제외로 마킹
 - `--translate`: 번역 제외 해제
 
@@ -147,6 +153,45 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "APP_STORE" --no-
 # 번역 제외 해제
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "KEY" --translate
 ```
+
+## 복수형 (plural variations)
+
+인자가 1개인 문자열의 복수형은 `--plural=LANG:CATEGORY:VALUE` 로 관리합니다. 카테고리는 CLDR 기준 `zero/one/two/few/many/other` 중 해당 언어에 필요한 것만 채웁니다 (슬라브어: one/few/many/other, 아랍어: 6개 전부, 아시아권 다수: other만 등).
+
+```bash
+# 러시아어 복수형 추가 (다른 언어는 --lang과 혼합 가능)
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/add.py file.xcstrings "APP_COUNT" \
+  --lang="ko:%lld개 앱" \
+  --plural="ru:one:%lld приложение" \
+  --plural="ru:few:%lld приложения" \
+  --plural="ru:many:%lld приложений" \
+  --plural="ru:other:%lld приложений"
+
+# 특정 카테고리만 수정 (기존 카테고리에 병합됨)
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "APP_COUNT" \
+  --plural="ru:zero:0 приложений"
+```
+
+인자가 2개 이상이라 인자별 복수형이 필요한 문자열(예: `%1$(covered)lld` + `%2$(total)lld`)은 xcstrings의 `substitutions` 구조가 필요하며, `--json` 으로 localization 객체를 통째로 지정합니다:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/update.py file.xcstrings "COVERAGE" --json='en:{
+  "stringUnit": {"state": "translated", "value": "Covers %#@covered@ of your %#@total@ apps"},
+  "substitutions": {
+    "covered": {"argNum": 1, "formatSpecifier": "lld", "variations": {"plural": {
+      "one": {"stringUnit": {"state": "translated", "value": "%arg app"}},
+      "other": {"stringUnit": {"state": "translated", "value": "%arg apps"}}
+    }}},
+    "total": {"argNum": 2, "formatSpecifier": "lld", "variations": {"plural": {
+      "other": {"stringUnit": {"state": "translated", "value": "%arg"}}
+    }}}
+  }
+}'
+```
+
+- 포맷 문자열에서는 각 substitution을 `%#@이름@` 로 참조하고, substitution 내부 값에서는 숫자 자리에 `%arg` 를 사용
+- `argNum` 은 Swift 생성 심볼의 argument 순서와 일치해야 함
+- `get.py` 는 substitutions 구조를 원본 JSON 그대로 반환
 
 ## 삭제
 

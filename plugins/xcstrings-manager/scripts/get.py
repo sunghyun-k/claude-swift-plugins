@@ -13,11 +13,16 @@ def get_value(entry, lang):
     if lang not in locs:
         return None
     loc = locs[lang]
+    # substitutions 등 복합 구조는 원본 그대로 반환
+    if 'substitutions' in loc:
+        return loc
     if 'stringUnit' in loc:
         return loc['stringUnit'].get('value')
     if 'variations' in loc and 'plural' in loc['variations']:
         return {k: v.get('stringUnit', {}).get('value')
                 for k, v in loc['variations']['plural'].items()}
+    if 'variations' in loc:
+        return loc
     return None
 
 

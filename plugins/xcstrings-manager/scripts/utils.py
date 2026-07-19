@@ -10,6 +10,59 @@ try:
 except locale.Error:
     locale.setlocale(locale.LC_ALL, '')
 
+PLURAL_CATEGORIES = ('zero', 'one', 'two', 'few', 'many', 'other')
+
+
+def parse_plural_arg(value):
+    """--plural=ru:few:%lld файла 형태의 인자를 파싱"""
+    import argparse
+    parts = value.split(':', 2)
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError(
+            f"Invalid format '{value}'. Use LANG:CATEGORY:VALUE (e.g., ru:few:%lld файла)")
+    lang, category, val = parts[0].strip(), parts[1].strip(), parts[2]
+    if category not in PLURAL_CATEGORIES:
+        raise argparse.ArgumentTypeError(
+            f"Invalid plural category '{category}'. Use one of: {', '.join(PLURAL_CATEGORIES)}")
+    return (lang, category, val)
+
+
+def parse_json_arg(value):
+    """--json=ru:{...} 형태의 인자를 파싱 (localization 객체를 그대로 지정)"""
+    import argparse
+    if ':' not in value:
+        raise argparse.ArgumentTypeError(
+            f"Invalid format '{value}'. Use LANG:JSON (e.g., ru:{{\"variations\": ...}})")
+    lang, raw = value.split(':', 1)
+    try:
+        obj = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise argparse.ArgumentTypeError(f"Invalid JSON for '{lang.strip()}': {e}")
+    if not isinstance(obj, dict):
+        raise argparse.ArgumentTypeError(f"JSON for '{lang.strip()}' must be an object")
+    return (lang.strip(), obj)
+
+
+def collect_plurals(plural_args):
+    """(lang, category, value) 리스트를 {lang: {category: value}}로 병합"""
+    result = {}
+    for lang, category, value in plural_args:
+        result.setdefault(lang, {})[category] = value
+    return result
+
+
+def plural_localization(categories):
+    """{category: value} → xcstrings variations.plural localization 객체"""
+    return {
+        'variations': {
+            'plural': {
+                cat: {'stringUnit': {'state': 'translated', 'value': val}}
+                for cat, val in categories.items()
+            }
+        }
+    }
+
+
 def load(path):
     """xcstrings 파일 로드"""
     with open(path, 'r', encoding='utf-8') as f:
