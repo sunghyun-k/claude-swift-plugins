@@ -30,6 +30,7 @@ Install individual plugins:
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
 /plugin install apple-docs-json@claude-swift-plugins
+/plugin install spi-docs@claude-swift-plugins
 ```
 
 Or browse and install interactively:
@@ -117,3 +118,16 @@ Rewrites Apple Developer documentation URLs to the DocC data (`.json`) endpoint 
 **Why:**
 - Apple docs are a JS-rendered single-page app, so plain HTML fetches often come back empty
 - The `.json` data endpoint is the same source the official site renders, served from Apple's own domain (no third-party proxy)
+
+### spi-docs
+
+Reads Swift Package Index (`swiftpackageindex.com`) DocC documentation pages and converts them to clean Markdown.
+
+**How it works:**
+- Skill: activates when an SPI documentation URL is given, or when a Swift package's docs need reading
+- Uses the session's browser tooling (in-app browser `mcp__Claude_Browser__*`, or the Chrome extension) to clear the Cloudflare challenge, then fetches the DocC data JSON with a same-origin `fetch` and renders it to Markdown
+- Every **Topics / See Also link stays a followable SPI documentation URL**, so you can walk the docs link by link
+
+**Why:**
+- SPI sits behind a Cloudflare managed challenge, so plain HTTP clients (`curl`, `requests`, `WebFetch`) are blocked with 403 — a real browser engine is required
+- Renders the DocC JSON structurally: title, overview, code, declarations, parameters, and Topics

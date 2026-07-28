@@ -56,6 +56,16 @@
       },
       "category": "hooks",
       "tags": ["ios", "apple", "documentation", "webfetch", "docc"]
+    },
+    {
+      "name": "spi-docs",
+      "source": "./plugins/spi-docs",
+      "description": "Reads Swift Package Index (DocC) documentation pages and converts them to clean Markdown, with every reference kept as a followable SPI URL.",
+      "author": {
+        "name": "Sunghyun Kim"
+      },
+      "category": "documentation",
+      "tags": ["swift", "swiftpackageindex", "documentation", "docc", "markdown"]
     }
   ]
 }

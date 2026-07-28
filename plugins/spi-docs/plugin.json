@@ -1,0 +1,8 @@
+{
+  "name": "spi-docs",
+  "version": "1.0.0",
+  "description": "Reads Swift Package Index (DocC) documentation pages and converts them to clean Markdown, with every reference kept as a followable SPI URL.",
+  "author": {
+    "name": "Sunghyun Kim"
+  }
+}

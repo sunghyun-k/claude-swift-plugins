@@ -28,6 +28,7 @@ iOS/Swift 개발을 위한 Claude Code 플러그인 모음입니다.
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
 /plugin install apple-docs-json@claude-swift-plugins
+/plugin install spi-docs@claude-swift-plugins
 ```
 
 또는 대화형으로 탐색 및 설치:
@@ -115,3 +116,16 @@ Apple Developer 문서 URL을 DocC 데이터(`.json`) 엔드포인트로 재작�
 **이유:**
 - Apple 문서는 JS로 렌더링되는 단일 페이지 앱이라 일반 HTML 페치는 본문이 비어 오는 경우가 많음
 - `.json` 데이터 엔드포인트는 공식 사이트가 렌더링하는 것과 동일한 원본이며, Apple 자체 도메인에서 제공(서드파티 프록시 미경유)
+
+### spi-docs
+
+Swift Package Index(`swiftpackageindex.com`)의 DocC 문서 페이지를 깔끔한 마크다운으로 변환해 읽습니다.
+
+**작동 원리:**
+- Skill: SPI 문서 URL 이 주어지거나 Swift 패키지 문서 열람이 필요할 때 활성화
+- 세션의 브라우저 도구(인앱 브라우저 `mcp__Claude_Browser__*` 또는 Chrome 확장)로 Cloudflare 챌린지를 통과한 뒤, same-origin `fetch` 로 DocC 데이터 JSON 을 받아 마크다운으로 변환
+- 변환된 문서의 **Topics / See Also 링크는 전부 다시 열 수 있는 SPI 문서 URL** 이라 링크를 따라가며 탐색 가능
+
+**이유:**
+- SPI 는 Cloudflare managed challenge 뒤에 있어 `curl`·`requests`·`WebFetch` 같은 순수 HTTP 클라이언트는 403 으로 막힘 → JS 를 실행하는 실제 브라우저 엔진이 필요
+- DocC render JSON 을 제목·개요·코드·선언부·파라미터·Topics 까지 구조 그대로 마크다운화
