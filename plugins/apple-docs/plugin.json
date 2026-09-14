@@ -1,5 +1,5 @@
 {
-  "name": "apple-docs-json",
+  "name": "apple-docs",
   "version": "1.0.0",
   "description": "Rewrites Apple Developer documentation WebFetch URLs to their Markdown (.md) endpoint (tutorials fall back to DocC .json), so Claude can read docs without the JavaScript-rendered site getting in the way.",
   "author": {

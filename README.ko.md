@@ -27,7 +27,7 @@ iOS/Swift 개발을 위한 Claude Code 플러그인 모음입니다.
 /plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
-/plugin install apple-docs-json@claude-swift-plugins
+/plugin install apple-docs@claude-swift-plugins
 /plugin install spi-docs@claude-swift-plugins
 ```
 
@@ -103,7 +103,7 @@ xcassets 리소스 CRUD 관리 도구입니다.
 - PNG, JPEG, PDF, SVG 형식 지원
 - 벡터 이미지용 Single scale 모드
 
-### apple-docs-json
+### apple-docs
 
 Apple Developer 문서 URL을 마크다운(`.md`) 엔드포인트로 재작성하여 WebFetch가 읽을 수 있게 합니다.
 

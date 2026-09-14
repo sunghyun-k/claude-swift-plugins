@@ -29,7 +29,7 @@ Install individual plugins:
 /plugin install tuist-guard@claude-swift-plugins
 /plugin install xcstrings-manager@claude-swift-plugins
 /plugin install xcassets-manager@claude-swift-plugins
-/plugin install apple-docs-json@claude-swift-plugins
+/plugin install apple-docs@claude-swift-plugins
 /plugin install spi-docs@claude-swift-plugins
 ```
 
@@ -105,7 +105,7 @@ CRUD management for xcassets resources.
 - Support for PNG, JPEG, PDF, and SVG formats
 - Single scale mode for vector images
 
-### apple-docs-json
+### apple-docs
 
 Rewrites Apple Developer documentation URLs to their Markdown (`.md`) endpoint so WebFetch can read them.
 

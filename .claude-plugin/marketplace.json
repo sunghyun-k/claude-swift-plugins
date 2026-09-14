@@ -48,8 +48,8 @@
       "tags": ["ios", "tuist", "xcode"]
     },
     {
-      "name": "apple-docs-json",
-      "source": "./plugins/apple-docs-json",
+      "name": "apple-docs",
+      "source": "./plugins/apple-docs",
       "description": "Rewrites Apple Developer documentation URLs to their Markdown (.md) endpoint so WebFetch can read them.",
       "author": {
         "name": "Sunghyun Kim"
