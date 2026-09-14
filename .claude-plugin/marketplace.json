@@ -50,7 +50,7 @@
     {
       "name": "apple-docs-json",
       "source": "./plugins/apple-docs-json",
-      "description": "Rewrites Apple Developer documentation URLs to the DocC data (.json) endpoint so WebFetch can read them.",
+      "description": "Rewrites Apple Developer documentation URLs to their Markdown (.md) endpoint so WebFetch can read them.",
       "author": {
         "name": "Sunghyun Kim"
       },

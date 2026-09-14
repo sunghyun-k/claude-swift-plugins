@@ -107,17 +107,19 @@ CRUD management for xcassets resources.
 
 ### apple-docs-json
 
-Rewrites Apple Developer documentation URLs to the DocC data (`.json`) endpoint so WebFetch can read them.
+Rewrites Apple Developer documentation URLs to their Markdown (`.md`) endpoint so WebFetch can read them.
 
 **How it works:**
 - Hook: `PreToolUse`
 - Matcher: `WebFetch`
-- Rewrites `developer.apple.com/documentation/...` (and `/tutorials/...`) URLs to `developer.apple.com/tutorials/data/...json`, returning structured DocC source instead of the JavaScript-rendered page
-- Non-documentation Apple URLs (videos, forums, etc.) and non-Apple URLs pass through untouched
+- Appends `.md` to `developer.apple.com/documentation/...` URLs, returning Markdown instead of the JavaScript-rendered page
+- `/tutorials/...` URLs have no `.md` form, so they are rewritten to the DocC data endpoint `developer.apple.com/tutorials/data/...json` instead
+- Already-rewritten URLs, non-documentation Apple URLs (videos, forums, etc.), and non-Apple URLs pass through untouched
 
 **Why:**
 - Apple docs are a JS-rendered single-page app, so plain HTML fetches often come back empty
-- The `.json` data endpoint is the same source the official site renders, served from Apple's own domain (no third-party proxy)
+- Both endpoints are the same source the official site renders, served from Apple's own domain (no third-party proxy)
+- Markdown is far more compact than the DocC JSON (roughly 6 KB vs. 50 KB for a typical symbol page), so it costs much less context
 
 ### spi-docs
 

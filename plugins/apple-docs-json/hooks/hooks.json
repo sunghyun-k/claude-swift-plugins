@@ -1,5 +1,5 @@
 {
-  "description": "Rewrites developer.apple.com documentation URLs to the DocC data (.json) endpoint so WebFetch can read them",
+  "description": "Rewrites developer.apple.com documentation URLs to their Markdown (.md) endpoint, and tutorials to the DocC data (.json) endpoint, so WebFetch can read them",
   "hooks": {
     "PreToolUse": [
       {

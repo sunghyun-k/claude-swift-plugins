@@ -105,17 +105,19 @@ xcassets 리소스 CRUD 관리 도구입니다.
 
 ### apple-docs-json
 
-Apple Developer 문서 URL을 DocC 데이터(`.json`) 엔드포인트로 재작성하여 WebFetch가 읽을 수 있게 합니다.
+Apple Developer 문서 URL을 마크다운(`.md`) 엔드포인트로 재작성하여 WebFetch가 읽을 수 있게 합니다.
 
 **작동 원리:**
 - Hook: `PreToolUse`
 - Matcher: `WebFetch`
-- `developer.apple.com/documentation/...`(및 `/tutorials/...`) URL을 `developer.apple.com/tutorials/data/...json`으로 재작성하여, JS로 렌더링되는 페이지 대신 구조화된 DocC 원본을 반환
-- 문서가 아닌 Apple URL(videos, forums 등)과 비-Apple URL은 손대지 않고 통과
+- `developer.apple.com/documentation/...` URL 뒤에 `.md` 를 붙여, JS로 렌더링되는 페이지 대신 마크다운을 반환
+- `/tutorials/...` URL 은 `.md` 형식이 없어서, DocC 데이터 엔드포인트 `developer.apple.com/tutorials/data/...json` 으로 재작성
+- 이미 재작성된 URL, 문서가 아닌 Apple URL(videos, forums 등), 비-Apple URL은 손대지 않고 통과
 
 **이유:**
 - Apple 문서는 JS로 렌더링되는 단일 페이지 앱이라 일반 HTML 페치는 본문이 비어 오는 경우가 많음
-- `.json` 데이터 엔드포인트는 공식 사이트가 렌더링하는 것과 동일한 원본이며, Apple 자체 도메인에서 제공(서드파티 프록시 미경유)
+- 두 엔드포인트 모두 공식 사이트가 렌더링하는 것과 동일한 원본이며, Apple 자체 도메인에서 제공(서드파티 프록시 미경유)
+- 마크다운은 DocC JSON 보다 훨씬 작아서(일반적인 심볼 페이지 기준 약 6 KB vs. 50 KB) 컨텍스트 소모가 크게 줄어듦
 
 ### spi-docs
 
