@@ -1,5 +1,17 @@
 # Claude Swift Plugins
 
+> [!WARNING]
+> **Archived — no longer maintained.** The plugins still install and run, but nothing here will be updated or fixed.
+>
+> Xcode 27.2 now ships much of what this collection existed for:
+>
+> - `xcrun agent plugin path --plugin-format claude` exports Apple's own skill set, including `translation` / `translation-coordinator` for String Catalogs — backed by per-language style guides and the source-code context of each string. That supersedes **xcstrings-manager** for translation work. (The mechanical parts — completion stats, listing and deleting keys — have no Apple equivalent; its `scripts/` still work standalone.)
+> - `xcrun xcodeproj` and `xcrun xcprojformatter` edit the new JSON `project.xcproj` directly, so **tuist-guard**'s premise — a generated project you must never touch — goes away once you keep `.xcodeproj` in the repo.
+>
+> **format-swift** is retired deliberately. Reformatting after every `Edit`/`Write` rewrites code the moment it is written, which makes the next edit's target text no longer match. Run the formatter once, after the change is finished.
+>
+> **apple-docs**, **xcassets-manager** and **spi-docs** have no Apple counterpart. Copy the hook or `scripts/` into your own `~/.claude/` if you still want them — note that `${CLAUDE_PLUGIN_ROOT}` does not resolve outside a plugin, so rewrite those paths.
+
 [한국어](README.ko.md)
 
 A Claude Code plugin collection for iOS/Swift development.

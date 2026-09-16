@@ -1,5 +1,17 @@
 # Claude Swift Plugins
 
+> [!WARNING]
+> **아카이브됨 — 더 이상 관리하지 않습니다.** 설치와 실행은 되지만 갱신·수정은 없습니다.
+>
+> 이 모음이 하던 일의 상당 부분을 Xcode 27.2 가 직접 제공합니다.
+>
+> - `xcrun agent plugin path --plugin-format claude` 로 Apple 이 만든 스킬 모음을 꺼낼 수 있습니다. 그중 `translation` / `translation-coordinator` 는 String Catalog 번역을 언어별 style guide 와 문자열의 소스 코드 사용처까지 보고 처리하므로, 번역에 한해 **xcstrings-manager** 를 대체합니다. (완료율 조회·키 목록/삭제 같은 기계적 조작은 대응물이 없고, `scripts/` 는 단독으로도 그대로 동작합니다.)
+> - `xcrun xcodeproj` 와 `xcrun xcprojformatter` 가 새 JSON `project.xcproj` 를 직접 편집합니다. `.xcodeproj` 를 저장소에서 관리하면 **tuist-guard** 의 전제 — 건드리면 안 되는 생성물 — 자체가 사라집니다.
+>
+> **format-swift** 는 의도적으로 접었습니다. `Edit`/`Write` 마다 포매터가 끼어들면 방금 쓴 코드가 곧바로 바뀌어, 이어지는 편집이 찾는 원문과 어긋납니다. 수정을 다 끝낸 뒤 한 번 돌리는 편이 낫습니다.
+>
+> **apple-docs**, **xcassets-manager**, **spi-docs** 는 Apple 쪽 대체물이 없습니다. 필요하면 훅이나 `scripts/` 를 각자 `~/.claude/` 로 복사해 쓰십시오 — `${CLAUDE_PLUGIN_ROOT}` 는 플러그인 밖에서 풀리지 않으니 경로는 고쳐야 합니다.
+
 iOS/Swift 개발을 위한 Claude Code 플러그인 모음입니다.
 
 [English](README.md)
